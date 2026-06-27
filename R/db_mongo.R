@@ -141,6 +141,34 @@ mg_obtener_por_codigo <- function(codigo) {
   col$find(paste0('{"codigo":"', codigo, '"}'))
 }
 
+# ============ EDITAR REPORTE (requiere código) ============
+mg_editar_reporte <- function(codigo, campos) {
+  col <- mongo_col("reportes")
+  if (is.null(col)) return(FALSE)
+  
+  # Solo permitir editar campos seguros
+  campos_permitidos <- c("nombre", "descripcion", "ubicacion",
+                         "estado_salud", "contacto", "tipo")
+  campos <- campos[names(campos) %in% campos_permitidos]
+  
+  if (length(campos) == 0) return(FALSE)
+  
+  update_json <- toJSON(list("$set" = campos), auto_unbox = TRUE)
+  query_json <- paste0('{"codigo":"', codigo, '"}')
+  
+  n <- col$update(query_json, update_json, upsert = FALSE)
+  isTRUE(n$modifiedCount > 0)
+}
+
+# ============ ELIMINAR REPORTE (requiere código) ============
+mg_eliminar_reporte <- function(codigo) {
+  col <- mongo_col("reportes")
+  if (is.null(col)) return(FALSE)
+  
+  n <- col$remove(paste0('{"codigo":"', codigo, '"}'))
+  isTRUE(n > 0)
+}
+
 # ============ CONTAR REPORTES ============
 mg_contar_reportes <- function() {
   col <- mongo_col("reportes")

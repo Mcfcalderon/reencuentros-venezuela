@@ -59,14 +59,21 @@ ui_ayuda <- function() {
       )
     ),
     
-    # Marcar como reunificado
+    # Gestionar mi reporte
     div(
       class = "paso-card",
-      tags$h5("\u2705 Marcar caso como reunificado"),
-      textInput("codigo_reunificar", "Ingresa tu c\u00f3digo de 4 d\u00edgitos",
-                placeholder = "Ej: 4827"),
-      actionButton("btn_reunificar", "Marcar como reunificado",
-                   class = "btn-reunificar")
+      tags$h5("\U0001F4DD Gestionar mi reporte"),
+      tags$p(class = "texto-gris",
+             "Ingresa tu c\u00f3digo de 4 d\u00edgitos para ver, editar, eliminar o marcar como reunificado tu reporte."),
+      div(
+        style = "display:flex; gap:10px; align-items:flex-end;",
+        div(style = "flex:1;",
+            textInput("codigo_gestionar", label = NULL,
+                      placeholder = "C\u00f3digo de 4 d\u00edgitos")),
+        actionButton("btn_buscar_codigo", "Buscar",
+                     class = "btn-buscar", style = "margin-bottom:15px;")
+      ),
+      uiOutput("panel_gestion_ui")
     ),
     
     # Números de emergencia

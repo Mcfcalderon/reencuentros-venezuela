@@ -219,6 +219,37 @@ body {
 .nav-icono { font-size: 1.3rem; display: block; margin-bottom: 2px; }
 .contenido-principal { padding-bottom: 70px; }
 
+/* Gestión de reportes */
+.gestion-panel { margin-top: 15px; }
+.gestion-panel h6 { font-weight: 700; margin-bottom: 15px; color: #333; }
+.gestion-botones {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;
+}
+.btn-guardar {
+  background-color: #1976D2 !important; color: white !important;
+  border: none !important; border-radius: 8px !important;
+  padding: 10px 20px !important; font-weight: 600 !important;
+  flex: 1;
+}
+.btn-eliminar {
+  background-color: #c62828 !important; color: white !important;
+  border: none !important; border-radius: 8px !important;
+  padding: 10px 20px !important; font-weight: 600 !important;
+  flex: 1;
+}
+.btn-reunificar {
+  background-color: var(--verde-ok) !important; color: white !important;
+  border: none !important; border-radius: 8px !important;
+  padding: 10px 20px !important; font-weight: 600 !important;
+  flex: 1;
+}
+.badge-reunificado {
+  display: inline-block; background: #E8F5E9; color: #2E7D32;
+  padding: 5px 12px; border-radius: 12px; font-weight: 700;
+  font-size: 0.85rem; margin-top: 8px;
+}
+.resultado-video { font-size: 0.85rem; color: var(--gris-texto); }
+
 @media (max-width: 480px) {
   .header-app h3 { font-size: 0.95rem; }
   .tipo-emoji { font-size: 1.5rem; }
