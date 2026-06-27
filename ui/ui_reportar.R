@@ -28,28 +28,31 @@ ui_reportar <- function() {
       )
     ),
     
+    # Indicador de progreso
+    uiOutput("progress_steps_ui"),
+    
     # Paso 1: Tipo de reporte
     div(
       class = "paso-card",
-      tags$h5("1. \u00bfA QUI\u00c9N VAS A REPORTAR?"),
+      tags$h5("1. \u00bfA QUI\u00c9N VAS A REPORTAR?", tags$span(class = "texto-rojo", " *")),
       div(
         class = "tipo-grid",
         actionButton("tipo_nino", label = tagList(
           tags$div(class = "tipo-emoji", "\U0001F9D2"),
           tags$div("Ni\u00f1o / Ni\u00f1a")
-        ), class = "btn-tipo"),
+        ), class = "btn-tipo", `aria-label` = "Reportar ni\u00f1o o ni\u00f1a"),
         actionButton("tipo_adulto", label = tagList(
           tags$div(class = "tipo-emoji", "\U0001F9D1"),
           tags$div("Adulto")
-        ), class = "btn-tipo"),
+        ), class = "btn-tipo", `aria-label` = "Reportar adulto"),
         actionButton("tipo_mayor", label = tagList(
           tags$div(class = "tipo-emoji", "\U0001F9D3"),
           tags$div("Adulto Mayor")
-        ), class = "btn-tipo"),
+        ), class = "btn-tipo", `aria-label` = "Reportar adulto mayor"),
         actionButton("tipo_mascota", label = tagList(
           tags$div(class = "tipo-emoji", "\U0001F43E"),
           tags$div("Mascota / Animal")
-        ), class = "btn-tipo")
+        ), class = "btn-tipo", `aria-label` = "Reportar mascota o animal")
       ),
       uiOutput("tipo_seleccionado_ui")
     ),
@@ -61,7 +64,8 @@ ui_reportar <- function() {
       tags$p(class = "texto-gris", "Muestra el rostro de la persona o el lugar para reconocimiento inmediato. (M\u00e1x. 20MB)"),
       fileInput("video_file", label = NULL,
                 accept = c("video/mp4", "video/quicktime", "video/webm"),
-                placeholder = "Seleccionar video...")
+                placeholder = "Seleccionar video..."),
+      uiOutput("video_preview_ui")
     ),
     
     # Paso 3: Fotos
@@ -74,7 +78,8 @@ ui_reportar <- function() {
       fileInput("fotos_file", label = NULL,
                 accept = c("image/jpeg", "image/png", "image/webp"),
                 multiple = TRUE,
-                placeholder = "Seleccionar fotos...")
+                placeholder = "Seleccionar fotos..."),
+      uiOutput("fotos_preview_ui")
     ),
     
     # Paso 4: Información adicional
@@ -95,8 +100,9 @@ ui_reportar <- function() {
                               "Desconocido" = "desconocido")),
       textInput("rep_contacto", "Contacto de quien reporta",
                 placeholder = "Tel\u00e9fono o red social"),
-      textAreaInput("rep_descripcion", "Descripci\u00f3n adicional",
-                    placeholder = "Escribe detalles como vestimenta, heridas visibles, o puntos de referencia sismol\u00f3gica...",
+      textAreaInput("rep_descripcion",
+                    tags$span("Descripci\u00f3n", tags$span(class = "texto-rojo", " *")),
+                    placeholder = "Vestimenta, heridas visibles, puntos de referencia...",
                     rows = 4)
     ),
     
@@ -105,7 +111,8 @@ ui_reportar <- function() {
       class = "text-center",
       style = "margin-top: 20px; margin-bottom: 30px;",
       actionButton("btn_publicar", "PUBLICAR REPORTE",
-                   class = "btn-publicar", width = "100%")
+                   class = "btn-publicar", width = "100%",
+                   `aria-label` = "Publicar reporte de persona encontrada")
     )
   )
 }

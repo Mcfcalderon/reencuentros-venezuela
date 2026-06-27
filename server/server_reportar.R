@@ -30,6 +30,62 @@ output$tipo_seleccionado_ui <- renderUI({
   div(class = "tipo-badge", paste("\u2705 Seleccionado:", etiquetas[tipo_sel()]))
 })
 
+# ── Indicador de progreso (1-4) ──
+output$progress_steps_ui <- renderUI({
+  paso1 <- !is.null(tipo_sel())
+  paso2 <- !is.null(input$video_file)
+  paso3 <- !is.null(input$fotos_file)
+  paso4 <- nzchar(input$rep_ubicacion %||% "") || nzchar(input$rep_descripcion %||% "")
+  
+  pasos <- c(paso1, paso2, paso3, paso4)
+  
+  make_step <- function(n, done) {
+    cls <- if (done) "progress-step progress-step-done" else "progress-step"
+    tags$span(class = cls, n)
+  }
+  make_line <- function(done) {
+    cls <- if (done) "progress-line progress-line-done" else "progress-line"
+    tags$span(class = cls)
+  }
+  
+  div(class = "progress-steps",
+      make_step(1, pasos[1]), make_line(pasos[1]),
+      make_step(2, pasos[2]), make_line(pasos[2]),
+      make_step(3, pasos[3]), make_line(pasos[3]),
+      make_step(4, pasos[4]))
+})
+
+# ── Vista previa de video ──
+output$video_preview_ui <- renderUI({
+  req(input$video_file)
+  size_mb <- round(input$video_file$size / (1024^2), 1)
+  over <- size_mb > MAX_VIDEO_MB
+  div(class = "file-preview",
+      tags$span(
+        style = paste0("color:", if(over) "var(--color-danger)" else "var(--color-success)", ";font-weight:600;"),
+        paste0("\U0001F4F9 ", input$video_file$name, " (", size_mb, " MB)",
+               if(over) paste0(" \u2014 \u26A0\uFE0F Excede l\u00edmite de ", MAX_VIDEO_MB, "MB") else " \u2705")
+      ))
+})
+
+# ── Vista previa de fotos ──
+output$fotos_preview_ui <- renderUI({
+  req(input$fotos_file)
+  imgs <- lapply(seq_len(nrow(input$fotos_file)), function(i) {
+    size_mb <- round(input$fotos_file$size[i] / (1024^2), 1)
+    over <- size_mb > MAX_FOTO_MB
+    # Generar data URI para la preview
+    raw <- readBin(input$fotos_file$datapath[i], "raw",
+                   min(input$fotos_file$size[i], 300000))
+    src <- paste0("data:image/jpeg;base64,", base64enc::base64encode(raw))
+    div(style = "display:inline-block; margin:4px; text-align:center;",
+        tags$img(src = src, style = "max-width:100px; max-height:100px; object-fit:cover; border-radius:8px; border:1px solid #ddd;"),
+        tags$div(style = paste0("font-size:0.7rem; color:", if(over) "var(--color-danger)" else "var(--color-text-secondary)", ";"),
+                 paste0(size_mb, "MB", if(over) " \u26A0\uFE0F" else "")))
+  })
+  div(class = "file-preview", imgs)
+})
+
 # Comprimir foto a thumbnail (max ~200KB por foto → safe para MongoDB)
 foto_a_thumbnail <- function(file_info, max_width = 800, quality = 70) {
   if (is.null(file_info)) return(NULL)
