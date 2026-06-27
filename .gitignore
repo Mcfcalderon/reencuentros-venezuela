@@ -1,0 +1,28 @@
+# Secretos
+.Renviron
+app_env
+
+# Datos locales
+data/
+*.sqlite
+
+# RStudio / R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# Deploy metadata
+rsconnect/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+*.tmp
+
+# OneDrive
+~$*
+*.~*

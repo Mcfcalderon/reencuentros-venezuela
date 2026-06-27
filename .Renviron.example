@@ -1,0 +1,14 @@
+# ============ Reencuentros Venezuela — Variables de Entorno ============
+# Copia este archivo como .Renviron y llena tus valores.
+# NUNCA subas .Renviron a GitHub.
+
+# MongoDB Atlas (obligatorio)
+# Usa la misma URI del cluster de StudyPilot, cambiando la base de datos
+MONGODB_URI=mongodb+srv://appuser:TuPassword@plan-estudios.9ugygin.mongodb.net/reencuentros_ve?retryWrites=true&w=majority
+
+# Google Gemini API Key (obligatorio para Match IA)
+# Obtén tu key en: https://aistudio.google.com/apikey
+GEMINI_API_KEY=AIzaSy_tu_key_aqui
+
+# Múltiples keys (opcional, para rotación en caso de rate limit)
+# GEMINI_KEYS=key1,key2,key3
