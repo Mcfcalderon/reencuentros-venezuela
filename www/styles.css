@@ -321,6 +321,33 @@ body { background-color: var(--color-bg); font-family: 'Segoe UI', Roboto, sans-
 }
 .resultado-video { font-size: 0.85rem; color: var(--color-text-secondary); }
 
+/* Recuperar código */
+.recuperar-codigo {
+  margin: 12px 0; padding: 0;
+}
+.recuperar-codigo summary {
+  cursor: pointer; color: var(--color-accent); font-weight: 600;
+  font-size: 0.9rem; padding: 8px 0;
+}
+.recuperar-codigo summary:hover { color: var(--color-brand); }
+.recuperar-resultados { margin-top: 12px; }
+.recuperar-card {
+  background: var(--color-bg); border: 1px solid var(--color-border);
+  border-radius: var(--radius); padding: 12px; margin-bottom: 8px;
+}
+.codigo-recuperado {
+  font-family: monospace; font-size: 1.3rem; font-weight: 800;
+  color: var(--color-brand); letter-spacing: 4px;
+  background: var(--color-brand-light); padding: 4px 12px;
+  border-radius: var(--radius);
+}
+.btn-copiar-mini {
+  background: none; border: 1px solid var(--color-border);
+  border-radius: 6px; padding: 4px 8px; cursor: pointer;
+  font-size: 0.9rem; transition: all 0.2s;
+}
+.btn-copiar-mini:hover { background: var(--color-bg); }
+
 /* Stats */
 .stats-grid { display: flex; gap: 15px; }
 .stat-card {

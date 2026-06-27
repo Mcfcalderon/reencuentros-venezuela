@@ -249,6 +249,20 @@ mg_eliminar_video <- function(video_ref) {
   })
 }
 
+# ============ RECUPERAR CÓDIGO POR CONTACTO ============
+mg_recuperar_por_contacto <- function(contacto) {
+  col <- mongo_col("reportes")
+  if (is.null(col)) return(data.frame())
+  if (!nzchar(contacto)) return(data.frame())
+  
+  # Búsqueda exacta por contacto
+  result <- col$find(
+    paste0('{"contacto":"', gsub('"', '\\\\"', contacto), '"}'),
+    fields = '{"codigo":1, "tipo":1, "nombre":1, "ubicacion":1, "fecha_reporte":1, "reunificado":1}'
+  )
+  result
+}
+
 # ============ CONTAR REPORTES ============
 mg_contar_reportes <- function() {
   col <- mongo_col("reportes")

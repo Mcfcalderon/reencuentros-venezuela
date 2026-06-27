@@ -73,6 +73,26 @@ ui_ayuda <- function() {
         actionButton("btn_buscar_codigo", "Buscar",
                      class = "btn-buscar", style = "margin-bottom:15px;")
       ),
+      # Opción de recuperación
+      tags$details(
+        class = "recuperar-codigo",
+        tags$summary("\U0001F511 \u00bfOlvidaste tu c\u00f3digo?"),
+        div(
+          style = "margin-top:10px;",
+          tags$p(class = "texto-gris",
+                 "Ingresa el n\u00famero de contacto o red social que usaste al crear el reporte. ",
+                 "Si coincide, te mostraremos tus reportes con su c\u00f3digo."),
+          div(
+            style = "display:flex; gap:10px; align-items:flex-end;",
+            div(style = "flex:1;",
+                textInput("contacto_recuperar", label = NULL,
+                          placeholder = "Tel\u00e9fono o red social que registraste")),
+            actionButton("btn_recuperar", "Recuperar",
+                         class = "btn-guardar", style = "margin-bottom:15px;")
+          ),
+          uiOutput("panel_recuperar_ui")
+        )
+      ),
       uiOutput("panel_gestion_ui")
     ),
     

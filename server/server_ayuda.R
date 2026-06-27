@@ -2,6 +2,64 @@
 
 reporte_gestion <- reactiveVal(NULL)
 
+# ── Recuperar código por contacto ──
+observeEvent(input$btn_recuperar, {
+  req(nzchar(input$contacto_recuperar))
+  
+  resultado <- tryCatch(
+    mg_recuperar_por_contacto(input$contacto_recuperar),
+    error = function(e) data.frame()
+  )
+  
+  if (nrow(resultado) == 0) {
+    showNotification("No se encontraron reportes con ese contacto.", type = "warning")
+  }
+  
+  output$panel_recuperar_ui <- renderUI({
+    if (nrow(resultado) == 0) return(NULL)
+    
+    etiquetas <- c(nino = "\U0001F9D2 Ni\u00f1o/a", adulto = "\U0001F9D1 Adulto",
+                   adulto_mayor = "\U0001F9D3 Adulto Mayor", mascota = "\U0001F43E Mascota")
+    
+    div(
+      class = "recuperar-resultados",
+      tags$p(tags$strong(paste0(nrow(resultado), " reporte(s) encontrado(s):"))),
+      lapply(seq_len(nrow(resultado)), function(i) {
+        r <- resultado[i, ]
+        es_reunificado <- isTRUE(r$reunificado)
+        div(
+          class = "recuperar-card",
+          div(
+            style = "display:flex; justify-content:space-between; align-items:center;",
+            div(
+              tags$span(class = "resultado-tipo", etiquetas[r$tipo] %||% r$tipo),
+              if (nzchar(r$nombre %||% "")) tags$span(style = "margin-left:8px; font-weight:600;", r$nombre),
+              if (nzchar(r$ubicacion %||% "")) tags$span(style = "margin-left:8px; color:#616161;", paste0("\U0001F4CD ", r$ubicacion))
+            ),
+            div(
+              if (es_reunificado) tags$span(class = "badge-reunificado", "\u2705 Reunificado")
+            )
+          ),
+          div(
+            style = "margin-top:8px; display:flex; align-items:center; gap:10px;",
+            tags$span("Tu c\u00f3digo:"),
+            tags$span(class = "codigo-recuperado", r$codigo),
+            tags$button(
+              class = "btn-copiar-mini",
+              onclick = paste0(
+                "navigator.clipboard.writeText('", r$codigo, "');",
+                "this.textContent='\u2705';",
+                "setTimeout(()=>this.textContent='\U0001F4CB',1500);"
+              ),
+              "\U0001F4CB"
+            )
+          )
+        )
+      })
+    )
+  })
+})
+
 # Buscar reporte por código
 observeEvent(input$btn_buscar_codigo, {
   req(nzchar(input$codigo_gestionar))
