@@ -171,6 +171,9 @@ observeEvent(input$btn_publicar, {
       easyClose = TRUE
     ))
     
+    # Refrescar resultados de búsqueda
+    rv_buscar$refresh <- rv_buscar$refresh + 1
+    
     # Limpiar formulario
     tipo_sel(NULL)
     updateTextInput(session, "rep_nombre", value = "")

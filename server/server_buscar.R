@@ -2,6 +2,19 @@
 
 tab_activa <- reactiveVal("tradicional")
 resultados_busqueda <- reactiveVal(data.frame())
+rv_buscar <- reactiveValues(refresh = 0)
+
+# Cargar todos los reportes al iniciar o al cambiar a pestaña Buscar
+observe({
+  rv_buscar$refresh
+  req(nav_actual() == "buscar")
+  
+  resultado <- tryCatch(
+    mg_obtener_todos(),
+    error = function(e) data.frame()
+  )
+  resultados_busqueda(resultado)
+})
 
 # Control de tabs
 observeEvent(input$tab_tradicional, {
@@ -105,7 +118,7 @@ output$resultados_ui <- renderUI({
   if (nrow(datos) == 0) {
     return(div(
       class = "sin-resultados",
-      tags$p("\U0001F50D No hay resultados. Realiza una b\u00fasqueda o a\u00fan no hay reportes registrados.")
+      tags$p("\U0001F50D No hay reportes activos. Los reportes aparecen aqu\u00ed autom\u00e1ticamente.")
     ))
   }
   
@@ -131,6 +144,13 @@ output$resultados_ui <- renderUI({
       )
     }
     
+    # Video metadata
+    video_html <- NULL
+    if ("video" %in% names(r) && nzchar(r$video %||% "")) {
+      video_html <- tags$p(class = "resultado-video",
+                           paste0("\U0001F4F9 Video: ", r$video))
+    }
+    
     div(
       class = "resultado-card",
       div(
@@ -149,6 +169,7 @@ output$resultados_ui <- renderUI({
       if (nzchar(r$contacto %||% ""))
         tags$p(class = "resultado-contacto", paste("\U0001F4DE", r$contacto)),
       fotos_html,
+      video_html,
       # Score de IA si existe
       if ("score" %in% names(r) && !is.na(r$score))
         tags$span(class = "match-score",

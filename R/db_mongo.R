@@ -78,13 +78,12 @@ mg_buscar <- function(texto = NULL, tipo = NULL) {
   col <- mongo_col("reportes")
   if (is.null(col)) return(data.frame())
   
-  filtros <- list(reunificado = FALSE)
+  # Construir query manualmente para control exacto del JSON
+  tipo_filter <- if (!is.null(tipo) && tipo != "todos") {
+    paste0(',"tipo":"', tipo, '"')
+  } else ""
   
-  if (!is.null(tipo) && tipo != "todos") {
-    filtros$tipo <- tipo
-  }
-  
-  query <- toJSON(filtros, auto_unbox = TRUE)
+  query <- paste0('{"$or":[{"reunificado":false},{"reunificado":{"$exists":false}}]', tipo_filter, '}')
   
   result <- col$find(query, sort = '{"fecha_reporte":-1}')
   
@@ -111,7 +110,11 @@ mg_obtener_todos <- function() {
   col <- mongo_col("reportes")
   if (is.null(col)) return(data.frame())
   
-  result <- col$find('{"reunificado":false}', sort = '{"fecha_reporte":-1}')
+  # Buscar reportes no reunificados (false o que no tengan el campo)
+  result <- col$find(
+    '{"$or":[{"reunificado":false},{"reunificado":{"$exists":false}}]}',
+    sort = '{"fecha_reporte":-1}'
+  )
   if (nrow(result) == 0) return(data.frame())
   result
 }
