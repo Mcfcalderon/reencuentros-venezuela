@@ -29,7 +29,7 @@ rsconnect::deployApp(
   appFiles     = app_files,
   appName      = "reencuentros-ve",
   appTitle     = "Reencuentros Terremotos Venezuela",
-  account      = "marvin-calderon",
+  account      = "YOUR-SHINYAPPS-ACCOUNT",  # Cambiar por tu cuenta
   server       = "shinyapps.io",
   forceUpdate  = TRUE,
   launch.browser = TRUE,

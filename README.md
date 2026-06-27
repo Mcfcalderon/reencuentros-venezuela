@@ -25,7 +25,7 @@ Plataforma humanitaria para centralizar reportes de personas y animales encontra
 
 ```bash
 # 1. Clonar repo
-git clone https://github.com/Mcfcalderon/reencuentros-venezuela.git
+git clone https://github.com/tu-usuario/reencuentros-venezuela.git
 cd reencuentros-venezuela
 
 # 2. Instalar paquetes
@@ -67,7 +67,7 @@ shiny::runApp()
 - Iván Castillo
 - Natalia Gajardo
 - Mary Hengy Torres
-- Marvin Calderón (Desarrollo web + IA)
+- (Desarrollo web + IA)
 
 ## Licencia
 
