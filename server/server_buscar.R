@@ -192,8 +192,8 @@ output$resultados_ui <- renderUI({
     if ("video" %in% names(r) && nzchar(r$video %||% "")) {
       if (startsWith(r$video, "gridfs:")) {
         # Video almacenado en GridFS — cargar y mostrar con <video>
-        fs_name <- sub("^gridfs:", "", r$video)
-        video_src <- tryCatch(mg_obtener_video(fs_name), error = function(e) NULL)
+        video_ref <- sub("^gridfs:", "", r$video)
+        video_src <- tryCatch(mg_obtener_video(video_ref), error = function(e) NULL)
         if (!is.null(video_src)) {
           video_name <- if ("video_name" %in% names(r)) r$video_name else "Video"
           video_html <- div(

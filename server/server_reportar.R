@@ -211,19 +211,20 @@ observeEvent(input$btn_publicar, {
   video_info <- NULL
   if (!is.null(codigo) && !is.null(input$video_file)) {
     showNotification("Subiendo video...", type = "message", id = "vid_notif", duration = NULL)
-    fs_name <- mg_guardar_video(
+    result <- mg_guardar_video(
       file_path = input$video_file$datapath,
       filename = input$video_file$name,
       codigo = codigo
     )
     removeNotification("vid_notif")
-    if (!is.null(fs_name)) {
-      # Actualizar el reporte con la referencia al video en GridFS
+    if (!is.null(result) && !is.null(result$id)) {
+      # Guardar referencia por ID (más confiable que por nombre)
       col <- mongo_col("reportes")
       if (!is.null(col)) {
+        video_name_safe <- gsub('"', '\\\\"', input$video_file$name)
         col$update(
           paste0('{"codigo":"', codigo, '"}'),
-          paste0('{"$set":{"video":"gridfs:', fs_name, '","video_name":"', input$video_file$name, '"}}')
+          paste0('{"$set":{"video":"gridfs:id:', result$id, '","video_name":"', video_name_safe, '"}}')
         )
       }
       video_info <- paste0(input$video_file$name, " (", round(input$video_file$size / (1024^2), 1), " MB)")

@@ -173,11 +173,17 @@ mg_eliminar_reporte <- function(codigo) {
 mg_guardar_video <- function(file_path, filename, codigo) {
   tryCatch({
     fs <- mongolite::gridfs(url = get_mongo_uri(), prefix = "videos")
-    # Nombre único vinculado al código del reporte
-    fs_name <- paste0(codigo, "_", filename)
+    # Nombre sin espacios para evitar problemas con mongolite
+    fs_name <- paste0(codigo, "_", gsub("[^a-zA-Z0-9._-]", "_", filename))
     fs$write(file(file_path, "rb"), name = fs_name)
-    message("[Reencuentros] Video guardado en GridFS: ", fs_name)
-    fs_name
+    
+    # Obtener el ID del archivo guardado
+    archivos <- fs$find(paste0('{"filename":"', fs_name, '"}'))
+    fs_id <- if (nrow(archivos) > 0) archivos$id[1] else NULL
+    
+    message("[Reencuentros] Video guardado en GridFS. Name: ", fs_name, " ID: ", fs_id)
+    # Devolver el ID (más confiable para lectura)
+    list(id = fs_id, name = fs_name)
   }, error = function(e) {
     message("[Reencuentros] Error guardando video en GridFS: ", e$message)
     NULL
@@ -185,11 +191,29 @@ mg_guardar_video <- function(file_path, filename, codigo) {
 }
 
 # ============ GRIDFS: OBTENER VIDEO ============
-mg_obtener_video <- function(fs_name) {
+mg_obtener_video <- function(video_ref) {
   tryCatch({
     fs <- mongolite::gridfs(url = get_mongo_uri(), prefix = "videos")
     tmp <- tempfile(fileext = ".mp4")
-    fs$read(name = fs_name, con = file(tmp, "wb"))
+    
+    # Leer por ObjectID (formato: "id:abc123") o por nombre
+    if (startsWith(video_ref, "id:")) {
+      oid <- sub("^id:", "", video_ref)
+      query <- paste0('{"_id":{"$oid":"', oid, '"}}')
+      fs$read(name = query, con = tmp)
+    } else {
+      # Legacy: intentar buscar por nombre y leer por ID
+      archivos <- fs$find()
+      match_idx <- grep(video_ref, archivos$name, fixed = TRUE)
+      if (length(match_idx) > 0) {
+        oid <- archivos$id[match_idx[1]]
+        query <- paste0('{"_id":{"$oid":"', oid, '"}}')
+        fs$read(name = query, con = tmp)
+      } else {
+        stop("Archivo no encontrado en GridFS")
+      }
+    }
+    
     raw <- readBin(tmp, "raw", file.info(tmp)$size)
     unlink(tmp)
     paste0("data:video/mp4;base64,", base64enc::base64encode(raw))
@@ -200,11 +224,24 @@ mg_obtener_video <- function(fs_name) {
 }
 
 # ============ GRIDFS: ELIMINAR VIDEO ============
-mg_eliminar_video <- function(fs_name) {
+mg_eliminar_video <- function(video_ref) {
   tryCatch({
     fs <- mongolite::gridfs(url = get_mongo_uri(), prefix = "videos")
-    fs$remove(fs_name)
-    message("[Reencuentros] Video eliminado de GridFS: ", fs_name)
+    if (startsWith(video_ref, "id:")) {
+      oid <- sub("^id:", "", video_ref)
+      query <- paste0('{"_id":{"$oid":"', oid, '"}}')
+      fs$remove(query)
+    } else {
+      # Legacy: buscar por nombre parcial
+      archivos <- fs$find()
+      match_idx <- grep(video_ref, archivos$name, fixed = TRUE)
+      if (length(match_idx) > 0) {
+        oid <- archivos$id[match_idx[1]]
+        query <- paste0('{"_id":{"$oid":"', oid, '"}}')
+        fs$remove(query)
+      }
+    }
+    message("[Reencuentros] Video eliminado de GridFS")
     TRUE
   }, error = function(e) {
     message("[Reencuentros] Error eliminando video: ", e$message)
