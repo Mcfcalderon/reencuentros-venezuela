@@ -169,6 +169,49 @@ mg_eliminar_reporte <- function(codigo) {
   isTRUE(n > 0)
 }
 
+# ============ GRIDFS: GUARDAR VIDEO ============
+mg_guardar_video <- function(file_path, filename, codigo) {
+  tryCatch({
+    fs <- mongolite::gridfs(url = get_mongo_uri(), prefix = "videos")
+    # Nombre único vinculado al código del reporte
+    fs_name <- paste0(codigo, "_", filename)
+    fs$write(file(file_path, "rb"), name = fs_name)
+    message("[Reencuentros] Video guardado en GridFS: ", fs_name)
+    fs_name
+  }, error = function(e) {
+    message("[Reencuentros] Error guardando video en GridFS: ", e$message)
+    NULL
+  })
+}
+
+# ============ GRIDFS: OBTENER VIDEO ============
+mg_obtener_video <- function(fs_name) {
+  tryCatch({
+    fs <- mongolite::gridfs(url = get_mongo_uri(), prefix = "videos")
+    tmp <- tempfile(fileext = ".mp4")
+    fs$read(name = fs_name, con = file(tmp, "wb"))
+    raw <- readBin(tmp, "raw", file.info(tmp)$size)
+    unlink(tmp)
+    paste0("data:video/mp4;base64,", base64enc::base64encode(raw))
+  }, error = function(e) {
+    message("[Reencuentros] Error leyendo video de GridFS: ", e$message)
+    NULL
+  })
+}
+
+# ============ GRIDFS: ELIMINAR VIDEO ============
+mg_eliminar_video <- function(fs_name) {
+  tryCatch({
+    fs <- mongolite::gridfs(url = get_mongo_uri(), prefix = "videos")
+    fs$remove(fs_name)
+    message("[Reencuentros] Video eliminado de GridFS: ", fs_name)
+    TRUE
+  }, error = function(e) {
+    message("[Reencuentros] Error eliminando video: ", e$message)
+    FALSE
+  })
+}
+
 # ============ CONTAR REPORTES ============
 mg_contar_reportes <- function() {
   col <- mongo_col("reportes")

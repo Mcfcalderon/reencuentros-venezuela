@@ -212,7 +212,12 @@ body { background-color: var(--color-bg); font-family: 'Segoe UI', Roboto, sans-
   font-size: 0.8rem; font-weight: 600; margin: 4px 0;
 }
 
-/* Video metadata badge */
+/* Video */
+.video-container { margin-top: 10px; }
+.video-label {
+  font-size: 0.8rem; color: #7B1FA2; font-weight: 600;
+  margin-bottom: 6px;
+}
 .video-meta-badge {
   display: inline-flex; align-items: center; gap: 6px;
   background: #F3E5F5; color: #7B1FA2; padding: 4px 12px;

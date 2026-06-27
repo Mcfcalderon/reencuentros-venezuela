@@ -189,16 +189,7 @@ observeEvent(input$btn_publicar, {
   # Fotos: comprimir a thumbnails y guardar como base64
   fotos_b64 <- foto_a_thumbnail(input$fotos_file)
   
-  # Video: solo guardar metadata (nombre y tamaño), NO el archivo
-  video_meta <- NULL
-  if (!is.null(input$video_file)) {
-    video_meta <- paste0(
-      input$video_file$name, " (",
-      round(input$video_file$size / (1024^2), 1), " MB)"
-    )
-  }
-  
-  # Insertar en MongoDB
+  # Insertar reporte primero (sin video) para obtener el código
   codigo <- tryCatch({
     mg_insertar_reporte(
       tipo = tipo_sel(),
@@ -208,13 +199,36 @@ observeEvent(input$btn_publicar, {
       estado_salud = input$rep_estado_salud,
       contacto = input$rep_contacto,
       fotos_b64 = fotos_b64,
-      video_b64 = video_meta
+      video_b64 = ""
     )
   }, error = function(e) {
     showNotification(paste("Error al publicar:", e$message), type = "error")
     removeNotification("pub_notif")
     return(NULL)
   })
+  
+  # Video: guardar en GridFS y vincular al reporte
+  video_info <- NULL
+  if (!is.null(codigo) && !is.null(input$video_file)) {
+    showNotification("Subiendo video...", type = "message", id = "vid_notif", duration = NULL)
+    fs_name <- mg_guardar_video(
+      file_path = input$video_file$datapath,
+      filename = input$video_file$name,
+      codigo = codigo
+    )
+    removeNotification("vid_notif")
+    if (!is.null(fs_name)) {
+      # Actualizar el reporte con la referencia al video en GridFS
+      col <- mongo_col("reportes")
+      if (!is.null(col)) {
+        col$update(
+          paste0('{"codigo":"', codigo, '"}'),
+          paste0('{"$set":{"video":"gridfs:', fs_name, '","video_name":"', input$video_file$name, '"}}')
+        )
+      }
+      video_info <- paste0(input$video_file$name, " (", round(input$video_file$size / (1024^2), 1), " MB)")
+    }
+  }
   
   removeNotification("pub_notif")
   
@@ -237,9 +251,9 @@ observeEvent(input$btn_publicar, {
         tags$p(class = "texto-gris", style = "margin-top:15px;",
                "\u26A0\uFE0F Guarda este c\u00f3digo. Es la \u00fanica forma de ",
                "editar, eliminar o marcar tu reporte como reunificado."),
-        if (!is.null(video_meta))
+        if (!is.null(video_info))
           tags$p(class = "texto-gris",
-                 "\U0001F4F9 Video registrado: ", video_meta)
+                 "\U0001F4F9 Video subido: ", video_info)
       ),
       footer = modalButton("Cerrar"),
       easyClose = FALSE

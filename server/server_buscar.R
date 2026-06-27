@@ -187,14 +187,36 @@ output$resultados_ui <- renderUI({
     # Galería de fotos con lightbox
     fotos_html <- render_galeria_fotos(r$fotos, rid)
     
-    # Video metadata
+    # Video: reproducible si está en GridFS
     video_html <- NULL
     if ("video" %in% names(r) && nzchar(r$video %||% "")) {
-      video_html <- div(
-        class = "video-meta-badge",
-        tags$span("\U0001F4F9"),
-        tags$span(r$video)
-      )
+      if (startsWith(r$video, "gridfs:")) {
+        # Video almacenado en GridFS — cargar y mostrar con <video>
+        fs_name <- sub("^gridfs:", "", r$video)
+        video_src <- tryCatch(mg_obtener_video(fs_name), error = function(e) NULL)
+        if (!is.null(video_src)) {
+          video_name <- if ("video_name" %in% names(r)) r$video_name else "Video"
+          video_html <- div(
+            class = "video-container",
+            tags$p(class = "video-label", paste0("\U0001F4F9 ", video_name)),
+            tags$video(
+              src = video_src,
+              type = "video/mp4",
+              controls = NA,
+              preload = "metadata",
+              style = "width:100%; border-radius:8px; max-height:400px;",
+              `aria-label` = paste("Video del reporte", rid)
+            )
+          )
+        } else {
+          video_html <- div(class = "video-meta-badge",
+                            tags$span("\U0001F4F9"), tags$span("Video no disponible"))
+        }
+      } else {
+        # Legacy: solo metadata de texto
+        video_html <- div(class = "video-meta-badge",
+                          tags$span("\U0001F4F9"), tags$span(r$video))
+      }
     }
     
     div(
