@@ -30,21 +30,57 @@ output$tipo_seleccionado_ui <- renderUI({
   div(class = "tipo-badge", paste("\u2705 Seleccionado:", etiquetas[tipo_sel()]))
 })
 
-# Convertir archivo a base64 para guardar en MongoDB
-archivo_a_base64 <- function(file_info) {
+# Comprimir foto a thumbnail (max ~200KB por foto → safe para MongoDB)
+foto_a_thumbnail <- function(file_info, max_width = 800, quality = 70) {
   if (is.null(file_info)) return(NULL)
   
   rutas_b64 <- sapply(seq_len(nrow(file_info)), function(i) {
-    raw <- readBin(file_info$datapath[i], "raw", file.info(file_info$datapath[i])$size)
-    ext <- tolower(tools::file_ext(file_info$name[i]))
-    mime <- switch(ext,
-      jpg = "image/jpeg", jpeg = "image/jpeg",
-      png = "image/png", webp = "image/webp",
-      mp4 = "video/mp4", mov = "video/quicktime",
-      webm = "video/webm",
-      "application/octet-stream"
-    )
-    paste0("data:", mime, ";base64,", base64enc::base64encode(raw))
+    tryCatch({
+      ext <- tolower(tools::file_ext(file_info$name[i]))
+      
+      # Leer imagen según formato
+      img <- if (ext %in% c("jpg", "jpeg")) {
+        jpeg::readJPEG(file_info$datapath[i])
+      } else if (ext == "png") {
+        png::readPNG(file_info$datapath[i])
+      } else {
+        # Para otros formatos, leer raw pero limitar tamaño
+        raw <- readBin(file_info$datapath[i], "raw", 
+                       min(file.info(file_info$datapath[i])$size, 500000))
+        return(paste0("data:image/", ext, ";base64,", base64enc::base64encode(raw)))
+      }
+      
+      # Redimensionar si es muy grande
+      dims <- dim(img)
+      h <- dims[1]; w <- dims[2]
+      if (w > max_width) {
+        ratio <- max_width / w
+        new_w <- max_width
+        new_h <- round(h * ratio)
+        # Resize simple por interpolación
+        row_idx <- round(seq(1, h, length.out = new_h))
+        col_idx <- round(seq(1, w, length.out = new_w))
+        if (length(dims) == 3) {
+          img <- img[row_idx, col_idx, ]
+        } else {
+          img <- img[row_idx, col_idx]
+        }
+      }
+      
+      # Guardar como JPEG comprimido en archivo temporal
+      tmp <- tempfile(fileext = ".jpg")
+      jpeg::writeJPEG(img, tmp, quality = quality / 100)
+      raw <- readBin(tmp, "raw", file.info(tmp)$size)
+      unlink(tmp)
+      
+      paste0("data:image/jpeg;base64,", base64enc::base64encode(raw))
+    }, error = function(e) {
+      # Fallback: leer raw pero limitar a 500KB
+      message("[Reencuentros] Error procesando foto: ", e$message)
+      raw <- readBin(file_info$datapath[i], "raw", 
+                     min(file.info(file_info$datapath[i])$size, 500000))
+      paste0("data:image/jpeg;base64,", base64enc::base64encode(raw))
+    })
   })
   paste(rutas_b64, collapse = "|||")
 }
@@ -85,9 +121,17 @@ observeEvent(input$btn_publicar, {
   
   showNotification("Publicando reporte...", type = "message", id = "pub_notif", duration = NULL)
   
-  # Convertir media a base64
-  video_b64 <- archivo_a_base64(input$video_file)
-  fotos_b64 <- archivo_a_base64(input$fotos_file)
+  # Fotos: comprimir a thumbnails y guardar como base64
+  fotos_b64 <- foto_a_thumbnail(input$fotos_file)
+  
+  # Video: solo guardar metadata (nombre y tamaño), NO el archivo
+  video_meta <- NULL
+  if (!is.null(input$video_file)) {
+    video_meta <- paste0(
+      input$video_file$name, " (",
+      round(input$video_file$size / (1024^2), 1), " MB)"
+    )
+  }
   
   # Insertar en MongoDB
   codigo <- tryCatch({
@@ -99,7 +143,7 @@ observeEvent(input$btn_publicar, {
       estado_salud = input$rep_estado_salud,
       contacto = input$rep_contacto,
       fotos_b64 = fotos_b64,
-      video_b64 = video_b64
+      video_b64 = video_meta
     )
   }, error = function(e) {
     showNotification(paste("Error al publicar:", e$message), type = "error")
@@ -118,7 +162,10 @@ observeEvent(input$btn_publicar, {
         tags$h1(class = "codigo-display", codigo),
         tags$p(class = "texto-gris",
                "Guarda este c\u00f3digo. Solo quien lo posee puede ",
-               "marcar el caso como reunificado.")
+               "marcar el caso como reunificado."),
+        if (!is.null(video_meta))
+          tags$p(class = "texto-gris",
+                 "\U0001F4F9 Video registrado: ", video_meta)
       ),
       footer = modalButton("Cerrar"),
       easyClose = TRUE

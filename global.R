@@ -12,6 +12,9 @@ library(bslib)
 library(shinyjs)
 library(mongolite)
 library(jsonlite)
+library(jpeg)
+library(png)
+library(base64enc)
 
 # ---- Funciones puras (carpeta R/) ----
 lapply(list.files("R", pattern = "\\.R$", full.names = TRUE), function(f) {
