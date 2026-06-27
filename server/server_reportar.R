@@ -87,9 +87,18 @@ foto_a_thumbnail <- function(file_info, max_width = 800, quality = 70) {
 
 # Publicar reporte
 observeEvent(input$btn_publicar, {
-  # Validaciones
-  if (is.null(tipo_sel())) {
-    showNotification("Selecciona a qui\u00e9n vas a reportar", type = "error")
+  # Validaciones de campos requeridos
+  errores <- c()
+  if (is.null(tipo_sel())) errores <- c(errores, "Selecciona a qui\u00e9n vas a reportar")
+  if (!nzchar(input$rep_ubicacion)) errores <- c(errores, "La ubicaci\u00f3n es obligatoria")
+  if (!nzchar(input$rep_descripcion) && is.null(input$video_file) && is.null(input$fotos_file))
+    errores <- c(errores, "Agrega al menos una descripci\u00f3n, foto o video")
+  
+  if (length(errores) > 0) {
+    showNotification(
+      paste("\u26A0\uFE0F", paste(errores, collapse = "\n")),
+      type = "error", duration = 5
+    )
     return()
   }
   
@@ -159,16 +168,25 @@ observeEvent(input$btn_publicar, {
       div(
         class = "text-center",
         tags$p("Tu c\u00f3digo de verificaci\u00f3n es:"),
-        tags$h1(class = "codigo-display", codigo),
-        tags$p(class = "texto-gris",
-               "Guarda este c\u00f3digo. Solo quien lo posee puede ",
-               "marcar el caso como reunificado."),
+        tags$h1(class = "codigo-display", id = "codigo-valor", codigo),
+        tags$button(
+          class = "btn-copiar-codigo",
+          onclick = paste0(
+            "navigator.clipboard.writeText('", codigo, "');",
+            "this.textContent='\u2705 Copiado!';",
+            "setTimeout(()=>this.textContent='\U0001F4CB Copiar c\u00f3digo',2000);"
+          ),
+          "\U0001F4CB Copiar c\u00f3digo"
+        ),
+        tags$p(class = "texto-gris", style = "margin-top:15px;",
+               "\u26A0\uFE0F Guarda este c\u00f3digo. Es la \u00fanica forma de ",
+               "editar, eliminar o marcar tu reporte como reunificado."),
         if (!is.null(video_meta))
           tags$p(class = "texto-gris",
                  "\U0001F4F9 Video registrado: ", video_meta)
       ),
       footer = modalButton("Cerrar"),
-      easyClose = TRUE
+      easyClose = FALSE
     ))
     
     # Refrescar resultados de búsqueda

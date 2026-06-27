@@ -104,6 +104,16 @@ observeEvent(input$btn_buscar_ia, {
   resultados_busqueda(resultado)
 })
 
+# Contador de reportes activos
+output$reportes_counter_ui <- renderUI({
+  rv_buscar$refresh
+  total <- tryCatch(mg_contar_reportes(), error = function(e) 0)
+  if (total > 0) {
+    div(class = "reportes-counter",
+        paste0("\U0001F4CB ", total, " reporte", ifelse(total != 1, "s", ""), " activo", ifelse(total != 1, "s", "")))
+  }
+})
+
 # Conteo de resultados
 output$resultados_conteo <- renderText({
   datos <- resultados_busqueda()

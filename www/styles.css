@@ -68,7 +68,7 @@ body {
 .paso-card {
   background-color: var(--blanco); border: 1px solid #e0e0e0;
   border-radius: 8px; padding: 20px; margin-bottom: 15px;
-  box-shadow: var(--sombra);
+  box-shadow: var(--sombra); transition: box-shadow 0.2s;
 }
 .paso-card h5 { margin-top: 0; font-weight: 700; color: #333; }
 
@@ -146,7 +146,11 @@ body {
 .resultado-card {
   background-color: var(--blanco); border: 1px solid #e0e0e0;
   border-radius: 8px; padding: 15px; margin-bottom: 10px;
-  box-shadow: var(--sombra);
+  box-shadow: var(--sombra); transition: box-shadow 0.2s, transform 0.2s;
+}
+.resultado-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
 }
 .resultado-header {
   display: flex; justify-content: space-between;
@@ -249,6 +253,37 @@ body {
   font-size: 0.85rem; margin-top: 8px;
 }
 .resultado-video { font-size: 0.85rem; color: var(--gris-texto); }
+
+/* Botón copiar código */
+.btn-copiar-codigo {
+  background-color: var(--rojo-claro); color: var(--rojo-principal);
+  border: 2px solid var(--rojo-principal); border-radius: 25px;
+  padding: 10px 25px; font-weight: 700; font-size: 0.9rem;
+  cursor: pointer; transition: all 0.2s; margin-top: 10px;
+}
+.btn-copiar-codigo:hover {
+  background-color: var(--rojo-principal); color: white;
+}
+
+/* Header sticky */
+.header-app {
+  position: sticky; top: 0; z-index: 999;
+}
+
+/* Campos requeridos */
+.campo-requerido::after {
+  content: " *"; color: var(--rojo-principal); font-weight: 700;
+}
+
+/* Contador de reportes en Buscar */
+.reportes-counter {
+  text-align: center; padding: 10px; margin-bottom: 15px;
+  background: var(--rojo-claro); border-radius: 8px;
+  color: var(--rojo-principal); font-weight: 600;
+}
+
+/* Touch-friendly nav buttons */
+.nav-btn { min-height: 50px; }
 
 @media (max-width: 480px) {
   .header-app h3 { font-size: 0.95rem; }

@@ -2,6 +2,9 @@
 
 ui_buscar <- function() {
   tagList(
+    # Contador de reportes activos
+    uiOutput("reportes_counter_ui"),
+    
     # Tabs de búsqueda
     div(
       class = "busqueda-tabs",

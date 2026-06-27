@@ -33,30 +33,19 @@ server <- function(input, output, session) {
   # Estado de navegación
   nav_actual <- reactiveVal("reportar")
 
-  # Navegación inferior
-  observeEvent(input$nav_reportar, {
-    nav_actual("reportar")
-    shinyjs::removeClass(id = "nav_reportar", class = "nav-btn-activo")
-    shinyjs::removeClass(id = "nav_buscar", class = "nav-btn-activo")
-    shinyjs::removeClass(id = "nav_ayuda", class = "nav-btn-activo")
-    shinyjs::addClass(id = "nav_reportar", class = "nav-btn-activo")
-  })
-
-  observeEvent(input$nav_buscar, {
-    nav_actual("buscar")
-    shinyjs::removeClass(id = "nav_reportar", class = "nav-btn-activo")
-    shinyjs::removeClass(id = "nav_buscar", class = "nav-btn-activo")
-    shinyjs::removeClass(id = "nav_ayuda", class = "nav-btn-activo")
-    shinyjs::addClass(id = "nav_buscar", class = "nav-btn-activo")
-  })
-
-  observeEvent(input$nav_ayuda, {
-    nav_actual("ayuda")
-    shinyjs::removeClass(id = "nav_reportar", class = "nav-btn-activo")
-    shinyjs::removeClass(id = "nav_buscar", class = "nav-btn-activo")
-    shinyjs::removeClass(id = "nav_ayuda", class = "nav-btn-activo")
-    shinyjs::addClass(id = "nav_ayuda", class = "nav-btn-activo")
-  })
+  # Navegación inferior (con scroll al top)
+  cambiar_tab <- function(tab) {
+    nav_actual(tab)
+    for (btn in c("nav_reportar", "nav_buscar", "nav_ayuda")) {
+      shinyjs::removeClass(id = btn, class = "nav-btn-activo")
+    }
+    shinyjs::addClass(id = paste0("nav_", tab), class = "nav-btn-activo")
+    shinyjs::runjs("window.scrollTo({top:0, behavior:'smooth'});")
+  }
+  
+  observeEvent(input$nav_reportar, cambiar_tab("reportar"))
+  observeEvent(input$nav_buscar, cambiar_tab("buscar"))
+  observeEvent(input$nav_ayuda, cambiar_tab("ayuda"))
 
   # Exportar nav_actual para conditionalPanel
   output$nav_actual_out <- reactive(nav_actual())
